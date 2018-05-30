@@ -50,7 +50,7 @@ def spell(bot, update):
     try:
         update.message.reply_text(text=get_spell(spell),
                                   parse_mode=ParseMode.MARKDOWN)
-    except Exception:
+    finally:
         update.message.reply_text(text='Creo que estás haciendo algo mal')
 
 

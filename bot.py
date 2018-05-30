@@ -15,8 +15,16 @@ def get_spell(spell):
 
     get_spell = requests.get(url)
     spells = get_spell.json()
-    message = f"""(*{spells['range'][0]['name']}* - {spells['object']}) Es *{spells['type']}* y *{spells['method']}*:
-                \n{spells['description']}"""
+
+    range_spell = spells['range'][0]['name']
+    wand = spells['object']
+    spell_type = spells['type']
+    method = spells['method']
+    description = spells['description']
+
+    message = f"""(*{range_spell}* - {wand}) Es *{spell_type}* y *{method}*:
+                \n{description}"""
+
     return message
 
 

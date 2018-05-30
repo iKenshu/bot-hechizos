@@ -7,6 +7,7 @@ import requests
 from slugify import slugify
 from telegram import ParseMode
 from telegram.ext import Updater, CommandHandler
+from telegram.error import BadRequest
 
 
 def get_spell(spell):
@@ -50,7 +51,7 @@ def spell(bot, update):
     try:
         update.message.reply_text(text=get_spell(spell),
                                   parse_mode=ParseMode.MARKDOWN)
-    finally:
+    except BadRequest:
         update.message.reply_text(text='Creo que estás haciendo algo mal')
 
 

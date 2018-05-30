@@ -15,7 +15,7 @@ def get_spell(spell):
 
     get_spell = requests.get(url)
     spells = get_spell.json()
-    message = f"""(*{spells['range'][0]['name']}*) Es *{spells['type']}* y *{spells['method']}*.:
+    message = f"""(*{spells['range'][0]['name']}* - {spells['object']}) Es *{spells['type']}* y *{spells['method']}*:
                 \n{spells['description']}
                 \n{spells['object']}"""
     return message

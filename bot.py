@@ -83,7 +83,7 @@ def main():
     dispatcher.add_handler(spell_handler)
     dispatcher.add_handler(range_handler)
 
-    updater.start_webhook(listen=0.0.0.0,
+    updater.start_webhook(listen='0.0.0.0',
                           port=int(PORT),
                           url_path=TOKEN)
     updater.bot.setWebhook(f'https://{NAME}.herokuapp.com/{TOKEN}')

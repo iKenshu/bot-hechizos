@@ -17,7 +17,7 @@ BASE_API_URL = "https://hechizos.ordendelfenix.xyz/api"
 
 def get_spell(spell):
     """
-        Get spell from API
+    Get spell from API
     """
     url = f"{BASE_API_URL}/spells/{spell}"
 
@@ -38,8 +38,8 @@ def get_spell(spell):
 
 def get_range(range):
     """
-        Respond with the /rango command
-        """
+    Respond with the /rango command
+    """
     url = f"{BASE_API_URL}/range/{range}"
 
     get_spell = requests.get(url)

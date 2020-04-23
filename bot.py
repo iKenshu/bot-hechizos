@@ -12,14 +12,14 @@ from telegram.ext import Updater, CommandHandler
 from telegram.error import BadRequest
 
 
-BASE_API_URL = "https://hechizos.ordendelfenix.xyz/api/"
+BASE_API_URL = "https://hechizos.ordendelfenix.xyz/api"
 
 
 def get_spell(spell):
     """
         Get spell from API
     """
-    url = f"{BASE_API_URL}{spell}"
+    url = f"{BASE_API_URL}/spells/{spell}"
 
     get_spell = requests.get(url)
     spells = get_spell.json()
@@ -40,7 +40,7 @@ def get_range(range):
     """
         Respond with the /rango command
         """
-    url = f"{BASE_API_URL}{range}"
+    url = f"{BASE_API_URL}/range/{range}"
 
     get_spell = requests.get(url)
     ranges = get_spell.json()

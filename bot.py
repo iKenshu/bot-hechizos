@@ -23,15 +23,21 @@ def get_spell(spell):
 
     get_spell = requests.get(url)
     spells = get_spell.json()
+    message = ""
+    try:
+        range_spell = (
+            ", ".join([single_range["name"] for single_range in spells["range"]])
+            or "Sin Rango"
+        )
+        wand = spells["object"]
+        spell_type = spells["type"]
+        method = spells["method"]
+        description = spells["description"]
 
-    range_spell = spells["range"][0]["name"]
-    wand = spells["object"]
-    spell_type = spells["type"]
-    method = spells["method"]
-    description = spells["description"]
-
-    message = f"""(*{range_spell}* - {wand}) Es *{spell_type}* y *{method}*:
-                \n{description}"""
+        message = f"""(*{range_spell}* - {wand}) Es *{spell_type}* y *{method}*:
+                    \n{description}"""
+    except KeyError:
+        message = "El hechizo no existe"
 
     return message
 
@@ -44,11 +50,15 @@ def get_range(range):
 
     get_spell = requests.get(url)
     ranges = get_spell.json()
-    spell_name = []
-    for spell in ranges:
-        spell_name.append(spell["name"])
-    message_format = ", ".join(spell_name)
-    message = f"{message_format}"
+    message = ""
+    try:
+        spell_name = (
+            ", ".join([spell["name"] for spell in ranges])
+            or "No hay hechizos para ese rango"
+        )
+        message = f"{spell_name}"
+    except KeyError:
+        message = "Probablemente ese rango no existe"
     return message
 
 

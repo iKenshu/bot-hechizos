@@ -107,7 +107,7 @@ def main():
 
     dispatcher = updater.dispatcher
 
-    start_handler = CommandHandler("start", start)
+    start_handler = CommandHandler("inicio", start)
     spell_handler = CommandHandler("hechizo", spell)
     range_handler = CommandHandler("rango", range)
     dispatcher.add_handler(start_handler)

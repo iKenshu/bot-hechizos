@@ -13,6 +13,16 @@ from telegram.error import BadRequest
 
 
 BASE_API_URL = "https://hechizos.ordendelfenix.xyz/api"
+NAME = "hechizoshlbot"
+PORT = os.environ.get("PORT")
+TOKEN = os.environ.get("TOKEN")
+
+
+def reply(message, update):
+    """Reply with a message"""
+    update.message.reply_text(
+        text=message, parse_mode=ParseMode.MARKDOWN, reply_to_message_id=None
+    )
 
 
 def get_spell(spell):
@@ -34,10 +44,12 @@ def get_spell(spell):
         method = spells["method"]
         description = spells["description"]
 
-        message = f"""(*{range_spell}* - {wand}) Es *{spell_type}* y *{method}*:
+        message = f"""*{spell.title().replace("-", " ")}:*\n\n(*{range_spell}* - {wand}) Es *{spell_type}* y *{method}*:
                     \n{description}"""
     except KeyError:
         message = "El hechizo no existe"
+    except BadRequest:
+        message = "Creo que estás haciendo algo mal"
 
     return message
 
@@ -48,15 +60,14 @@ def get_range(range):
     """
     url = f"{BASE_API_URL}/range/{range}"
 
-    get_spell = requests.get(url)
-    ranges = get_spell.json()
+    response = requests.get(url)
+    spells = response.json()
     message = ""
     try:
-        spell_name = (
-            ", ".join([spell["name"] for spell in ranges])
-            or "No hay hechizos para ese rango"
+        spells_name = (
+            ", ".join([s["name"] for s in spells]) or "No hay hechizos para ese rango"
         )
-        message = f"{spell_name}"
+        message = f'*{range.title().replace("-", " ")}:*\n\n{spells_name}'
     except KeyError:
         message = "Probablemente ese rango no existe"
     return message
@@ -72,25 +83,25 @@ def start(bot, update):
     )
 
 
+# Commands to the bot responds
+
+
 def spell(bot, update):
     """
     Respond with the /hechizo command
     """
     message = slugify(update.message.text)
-    spell = message[8:]
-    try:
-        update.message.reply_text(text=get_spell(spell), parse_mode=ParseMode.MARKDOWN)
-    except BadRequest:
-        update.message.reply_text(text="Creo que estás haciendo algo mal")
+    selected_spell = message[8:]
+    reply(message=get_spell(selected_spell), update=update)
 
 
-def range(bot, update):
+def _range(bot, update):
     """
     Respond with the /range command
     """
     message = slugify(update.message.text)
-    range = message[6:]
-    update.message.reply_text(text=get_range(range), parse_mode=ParseMode.MARKDOWN)
+    selected_range = message[6:]
+    reply(message=get_range(selected_range), update=update)
 
 
 def main():
@@ -99,23 +110,16 @@ def main():
         level=logging.INFO,
     )
 
-    NAME = "hechizoshlbot"
-    PORT = os.environ.get("PORT")
-    TOKEN = os.environ.get("TOKEN")
-
     updater = Updater(token=TOKEN)
 
     dispatcher = updater.dispatcher
 
-    start_handler = CommandHandler("inicio", start)
+    start_handler = CommandHandler("iniciar", start)
     spell_handler = CommandHandler("hechizo", spell)
-    range_handler = CommandHandler("rango", range)
+    range_handler = CommandHandler("rango", _range)
     dispatcher.add_handler(start_handler)
     dispatcher.add_handler(spell_handler)
     dispatcher.add_handler(range_handler)
-
-    updater.start_webhook(listen="0.0.0.0", port=int(PORT), url_path=TOKEN)
-    updater.bot.setWebhook(f"https://{NAME}.herokuapp.com/{TOKEN}")
 
     updater.start_polling()
 

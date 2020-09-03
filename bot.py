@@ -68,8 +68,8 @@ def get_spell(spell):
     """
     url = f"{BASE_API_URL}/spells/{spell}"
 
-    get_spell = requests.get(url)
-    spells = get_spell.json()
+    get_spell_request = requests.get(url)
+    spells = get_spell_request.json()
     message = ""
     try:
         range_spell = (
@@ -139,8 +139,6 @@ def start(bot, update):
 
 
 # Commands to the bot responds
-
-
 def patronus(bot, update):
     """
     Respond with the /patronus command
@@ -183,14 +181,16 @@ def main():
 
     start_handler = CommandHandler("iniciar", start)
     spell_handler = CommandHandler("hechizo", spell)
-    spell_handler = CommandHandler("patronus", patronus)
-    spell_handler = CommandHandler("ayuda", help_function)
-    spell_handler = CommandHandler("help", help_function)
-    spell_handler = CommandHandler("aiuda", help_function)
+    patronus_handler = CommandHandler("patronus", patronus)
+    aiuda_handler = CommandHandler("aiuda", help_function)
+    ayuda_handler = CommandHandler("ayuda", help_function)
     range_handler = CommandHandler("rango", _range)
     dispatcher.add_handler(start_handler)
     dispatcher.add_handler(spell_handler)
     dispatcher.add_handler(range_handler)
+    dispatcher.add_handler(patronus_handler)
+    dispatcher.add_handler(aiuda_handler)
+    dispatcher.add_handler(ayuda_handler)
 
     updater.start_polling()
 

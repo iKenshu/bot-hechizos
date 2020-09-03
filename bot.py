@@ -110,23 +110,31 @@ def get_range(range):
     return message
 
 
-def start(bot, update):
-    """
-    Respond with the /start command
-    """
-    message = (
-        f"Hola, ahora puedes preguntar por algunos hechizos y cosas bonis de la ODF.\n"
-    )
-    message = f"{message}*Comandos:*\n\n"
+def get_initial_message():
+    message = f"Hola, ahora puedes preguntar por algunos hechizos y cosas bonis de la ODF.\n\n"
+    message = f"{message} *Comandos:* \n\n"
     message = f"{message}/iniciar: Iniciar el bot\n"
+    message = f"{message}/help|ayuda|aiuda: Perdir aiuda\n"
     message = f"{message}/hechizo xxxx: Busca un hechizo por el nombre\n"
     message = f"{message}/rango xxxx: Busca los hechizos de un rango\n"
     message = f"{message}/patronus xxxx: Busca el patronus de un usuario\n"
     message = (
         f"{message}/patronus animal xxxx: Busca los usuarios que tengan ese patronus"
     )
+    return message
+
+
+def help_function(bot, update):
+    reply(message=get_initial_message(), update=update)
+
+
+def start(bot, update):
+    """
+    Respond with the /start command
+    """
+
     bot.send_message(
-        chat_id=update.message.chat_id, text=message,
+        chat_id=update.message.chat_id, text=get_initial_message,
     )
 
 
@@ -176,6 +184,9 @@ def main():
     start_handler = CommandHandler("iniciar", start)
     spell_handler = CommandHandler("hechizo", spell)
     spell_handler = CommandHandler("patronus", patronus)
+    spell_handler = CommandHandler("ayuda", help_function)
+    spell_handler = CommandHandler("help", help_function)
+    spell_handler = CommandHandler("aiuda", help_function)
     range_handler = CommandHandler("rango", _range)
     dispatcher.add_handler(start_handler)
     dispatcher.add_handler(spell_handler)

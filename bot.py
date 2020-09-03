@@ -3,6 +3,8 @@
 
 import os
 import logging
+import re
+import html
 
 # Third party integration
 import requests
@@ -12,7 +14,9 @@ from telegram.ext import Updater, CommandHandler
 from telegram.error import BadRequest
 
 
-BASE_API_URL = "https://hechizos.ordendelfenix.xyz/api"
+# BASE_API_URL = "https://hechizos.ordendelfenix.xyz/api"
+BASE_API_URL = os.environ.get("API_HECHIZOS")
+API_CHARACTERS = os.environ.get("API_CHARACTERS")
 NAME = "hechizoshlbot"
 PORT = os.environ.get("PORT")
 TOKEN = os.environ.get("TOKEN")
@@ -21,8 +25,41 @@ TOKEN = os.environ.get("TOKEN")
 def reply(message, update):
     """Reply with a message"""
     update.message.reply_text(
-        text=message, parse_mode=ParseMode.MARKDOWN, reply_to_message_id=None
+        text=html.unescape(message),
+        parse_mode=ParseMode.MARKDOWN,
+        reply_to_message_id=None,
     )
+
+
+def get_patronus(patronus_search):
+    """
+    Get characters from API
+    """
+    if patronus_search[0:6] == "animal":
+        url = f"{API_CHARACTERS}/characters/?search={patronus_search[7:]}"
+    else:
+        url = f"{API_CHARACTERS}/characters/{slugify(patronus_search)}"
+    result = requests.get(url)
+    result_data = list()
+    if result.status_code == 200:
+        data = result.json()
+        check_results = data.get("results", False)
+        if check_results and data["results"]:
+            for character in data["results"]:
+                result_data.append(
+                    {"nick": f'{character["nick"]}:', "patronus": character["patronus"]}
+                )
+        check_url = data.get("url", False)
+        if check_url:
+            character = data
+            result_data.append(
+                {"nick": f'{character["nick"]}:', "patronus": character["patronus"]}
+            )
+    if not result_data:
+        result_data.append(
+            {"nick": "No se encontraron personajes con ese patronus", "patronus": ""}
+        )
+    return result_data
 
 
 def get_spell(spell):
@@ -77,13 +114,35 @@ def start(bot, update):
     """
     Respond with the /start command
     """
+    message = (
+        f"Hola, ahora puedes preguntar por algunos hechizos y cosas bonis de la ODF.\n"
+    )
+    message = f"{message}*Comandos:*\n\n"
+    message = f"{message}/iniciar: Iniciar el bot\n"
+    message = f"{message}/hechizo xxxx: Busca un hechizo por el nombre\n"
+    message = f"{message}/rango xxxx: Busca los hechizos de un rango\n"
+    message = f"{message}/patronus xxxx: Busca el patronus de un usuario\n"
+    message = (
+        f"{message}/patronus animal xxxx: Busca los usuarios que tengan ese patronus"
+    )
     bot.send_message(
-        chat_id=update.message.chat_id,
-        text="Hola, ahora puedes preguntar por algunos hechizos",
+        chat_id=update.message.chat_id, text=message,
     )
 
 
 # Commands to the bot responds
+
+
+def patronus(bot, update):
+    """
+    Respond with the /patronus command
+    """
+    message = update.message.text
+    search_term = message[10:]
+    results = get_patronus(search_term)
+    for character in results:
+        message = f'*{character["nick"]}* {character["patronus"]}'
+        reply(message=re.sub("<[^<]+?>", "", message), update=update)
 
 
 def spell(bot, update):
@@ -116,6 +175,7 @@ def main():
 
     start_handler = CommandHandler("iniciar", start)
     spell_handler = CommandHandler("hechizo", spell)
+    spell_handler = CommandHandler("patronus", patronus)
     range_handler = CommandHandler("rango", _range)
     dispatcher.add_handler(start_handler)
     dispatcher.add_handler(spell_handler)

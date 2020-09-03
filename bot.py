@@ -31,15 +31,7 @@ def reply(message, update):
     )
 
 
-def get_patronus(patronus_search):
-    """
-    Get characters from API
-    """
-    if patronus_search[0:6] == "animal":
-        url = f"{API_CHARACTERS}/characters/?search={patronus_search[7:]}"
-    else:
-        url = f"{API_CHARACTERS}/characters/{slugify(patronus_search)}"
-    result = requests.get(url)
+def check_rest_result(result):
     result_data = list()
     if result.status_code == 200:
         data = result.json()
@@ -55,11 +47,30 @@ def get_patronus(patronus_search):
             result_data.append(
                 {"nick": f'{character["nick"]}:', "patronus": character["patronus"]}
             )
-    if not result_data:
-        result_data.append(
+    return result_data
+
+
+def get_patronus(patronus_search):
+    """
+    Get characters from API
+    """
+    check_animal = patronus_search[0:6] == "animal"
+    if check_animal:
+        url = f"{API_CHARACTERS}/characters/?search={patronus_search[7:]}"
+    else:
+        url = f"{API_CHARACTERS}/characters/{slugify(patronus_search)}"
+    result = requests.get(url)
+
+    result_rest = check_rest_result(result)
+    if not result_rest and not check_animal:
+        url = f"{API_CHARACTERS}/characters/?search={patronus_search}"
+    result = requests.get(url)
+    result_rest = check_rest_result(result)
+    if not result_rest:
+        result_rest.append(
             {"nick": "No se encontraron personajes con ese patronus", "patronus": ""}
         )
-    return result_data
+    return result_rest
 
 
 def get_spell(spell):

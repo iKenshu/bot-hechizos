@@ -42,7 +42,7 @@ def check_rest_result(result):
                     {
                         "nick": f'{character["nick"]}:',
                         "patronus": character["patronus"],
-                        "varita": character["wand"],
+                        "wand": character["wand"],
                     }
                 )
         check_url = data.get("url", False)
@@ -52,7 +52,7 @@ def check_rest_result(result):
                 {
                     "nick": f'{character["nick"]}:',
                     "patronus": character["patronus"],
-                    "varita": character["wand"],
+                    "wand": character["wand"],
                 }
             )
     return result_data
@@ -187,7 +187,7 @@ def wand(bot, update):
     Respond with /varita command
     """
     message = update.message.text
-    search_term = message[9:]
+    search_term = message[8:]
     results = get_wand(search_term)
     for character in results:
         message = f'*{character["nick"]}* {character["wand"]}'

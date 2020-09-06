@@ -39,13 +39,21 @@ def check_rest_result(result):
         if check_results and data["results"]:
             for character in data["results"]:
                 result_data.append(
-                    {"nick": f'{character["nick"]}:', "patronus": character["patronus"]}
+                    {
+                        "nick": f'{character["nick"]}:',
+                        "patronus": character["patronus"],
+                        "varita": character["wand"],
+                    }
                 )
         check_url = data.get("url", False)
         if check_url:
             character = data
             result_data.append(
-                {"nick": f'{character["nick"]}:', "patronus": character["patronus"]}
+                {
+                    "nick": f'{character["nick"]}:',
+                    "patronus": character["patronus"],
+                    "varita": character["wand"],
+                }
             )
     return result_data
 
@@ -70,6 +78,18 @@ def get_patronus(patronus_search):
         result_rest.append(
             {"nick": "No se encontraron personajes con ese patronus", "patronus": ""}
         )
+    return result_rest
+
+
+def get_wand(wand_search):
+    """
+    Get characters from API
+    """
+    url = f"{API_CHARACTERS}/characters/{slugify(wand_search)}"
+    result = requests.get(url)
+    result_rest = check_rest_result(result)
+    if not result_rest:
+        result_rest.append({"nick": "No se encontró el personaje", "wand": ""})
     return result_rest
 
 
@@ -162,6 +182,18 @@ def patronus(bot, update):
         reply(message=re.sub("<[^<]+?>", "", message), update=update)
 
 
+def wand(bot, update):
+    """
+    Respond with /varita command
+    """
+    message = update.message.text
+    search_term = message[9:]
+    results = get_wand(search_term)
+    for character in results:
+        message = f'*{character["nick"]}* {character["wand"]}'
+        reply(message=re.sub("<[^<]+?>", "", message), update=update)
+
+
 def spell(bot, update):
     """
     Respond with the /hechizo command
@@ -193,6 +225,8 @@ def main():
     start_handler = CommandHandler("iniciar", start)
     spell_handler = CommandHandler("hechizo", spell)
     patronus_handler = CommandHandler("patronus", patronus)
+    varita_handler = CommandHandler("varita", wand)
+    wand_handler = CommandHandler("wand", wand)
     aiuda_handler = CommandHandler("aiuda", help_function)
     ayuda_handler = CommandHandler("ayuda", help_function)
     range_handler = CommandHandler("rango", _range)
@@ -202,6 +236,8 @@ def main():
     dispatcher.add_handler(patronus_handler)
     dispatcher.add_handler(aiuda_handler)
     dispatcher.add_handler(ayuda_handler)
+    dispatcher.add_handler(varita_handler)
+    dispatcher.add_handler(wand_handler)
 
     updater.start_polling()
 

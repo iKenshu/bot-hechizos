@@ -5,6 +5,7 @@ import os
 import logging
 import re
 import html
+import textwrap
 
 # Third party integration
 import requests
@@ -24,11 +25,29 @@ TOKEN = os.environ.get("TOKEN")
 
 def reply(message, update):
     """Reply with a message"""
-    update.message.reply_text(
-        text=html.unescape(message),
-        parse_mode=ParseMode.MARKDOWN,
-        reply_to_message_id=None,
-    )
+
+    try:
+        raw_message = html.unescape(message)
+        if len(raw_message) > 4096:
+            all_messages = textwrap.wrap(raw_message, 4096)
+            for msg in all_messages:
+                update.message.reply_text(
+                    text=msg, parse_mode=ParseMode.MARKDOWN, reply_to_message_id=None,
+                )
+        else:
+            update.message.reply_text(
+                text=html.unescape(message),
+                parse_mode=ParseMode.MARKDOWN,
+                reply_to_message_id=None,
+            )
+    except BadRequest:
+        update.message.reply_text(
+            text=html.unescape(
+                "Sucedió un error, no podemos mostrarte lo que solicitaste :("
+            ),
+            parse_mode=ParseMode.MARKDOWN,
+            reply_to_message_id=None,
+        )
 
 
 def check_rest_result(result):
